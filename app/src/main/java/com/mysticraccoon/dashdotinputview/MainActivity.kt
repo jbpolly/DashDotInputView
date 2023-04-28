@@ -1,5 +1,6 @@
 package com.mysticraccoon.dashdotinputview
 
+import android.media.MediaPlayer
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
@@ -47,6 +48,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -178,7 +180,6 @@ fun MorseBook(modifier: Modifier = Modifier, morseText: String, alphaText: Strin
             )
         }
     }
-
 }
 
 @Composable
@@ -199,6 +200,12 @@ fun MorseBox(
             .background(TableBrown)
 
     ) {
+        val currentContext = LocalContext.current
+        val mp = remember {
+            MediaPlayer.create(currentContext, R.raw.beeeeep_loop).apply {
+                isLooping = true
+            }
+        }
 
         var metronomeInterval by remember {
             mutableStateOf(DEFAULT_TIMER_TIME)
@@ -267,18 +274,21 @@ fun MorseBox(
                 if (!isMetronomeStopped) {
                     when (interaction) {
                         is PressInteraction.Press -> {
+                            mp.start()
                             lastElapsedTime = System.currentTimeMillis()
                             pauseDuration = lastElapsedTime - currentElapsedTime
                             isMorseTimerRunning = true
                         }
 
                         is PressInteraction.Release -> {
+                            mp.pause()
                             currentElapsedTime = System.currentTimeMillis()
                             duration = currentElapsedTime - lastElapsedTime
                             isMorseTimerRunning = false
                         }
 
                         is PressInteraction.Cancel -> {
+                            mp.pause()
                             currentElapsedTime = System.currentTimeMillis()
                             duration = currentElapsedTime - lastElapsedTime
                             isMorseTimerRunning = false
@@ -408,27 +418,8 @@ fun MorseBox(
                 .clickable(
                     interactionSource = interactionSource,
                     indication = LocalIndication.current
-                ) { /* update some business state here */ }
-//                .pointerInput(Unit) {
-//                    awaitEachGesture {
-//                        while (true) {
-//                            withTimeoutOrNull(newWordInterval) {
-//                                awaitFirstDown()
-//                            } ?: run {
-//                                //space
-//                                morseText += '%'
-//                            }
-//                            val upEvent = waitForUpOrCancellation() ?: continue
-//                            val duration = upEvent.uptimeMillis - upEvent.previousUptimeMillis
-//                            Log.d("260423", "Duration: $duration")
-//                            if (duration >= dashInterval) {
-//                                morseText += '-'
-//                            } else {
-//                                morseText += '.'
-//                            }
-//                        }
-//                    }
-//                },
+                ) { }
+
         ) {
 
         }
